@@ -76,22 +76,6 @@ function connectDB() {
         createUserSchema();
 
         console.log('UserSchema 정의함.');
-
-        //스키마에 static 메소드 추가, 모델 객체에서 사용가능(모델 인스턴스에서 사용하려면 method()로 정의)
-        //ID로 조회, 전부 조회
-        UserSchema.static('findById', function (id, callback) {
-            return this.find({ id: id }, callback);
-        });
-
-        UserSchema.static('findAll',function(callback){
-            return this.find({},callback);
-        });
-
-        //UserSchema로 모델 정의(model메소드와 Model메소드의 파라미터가 다르니 주의)
-        //users2 컬렉션과 매칭
-        UserModel = mongoose.model('users2', UserSchema);
-
-        console.log('UserModel 정의함.');
     });
 
     database.on('disconnected', function () {
@@ -102,15 +86,15 @@ function connectDB() {
 }
 
 //user 스키마 및 모델 객체생성
-function createUserSchema(){
+function createUserSchema() {
     //스키마 정의
     UserSchema = mongoose.Schema({
         //unique 속성을 사용하면 자동으로 index 생성
         //password대신 암호화 된 hashed_password 사용, 암호화 키값인 salt 사용
-        id: { type: String, required: true, unique: true, 'default':' ' },
-        hashed_password:{type:String, required:true,'default':' '},
-        salt : {type:String, required:true},
-        name: { type: String, index: 'hashed', 'default':' ' },
+        id: { type: String, required: true, unique: true, 'default': ' ' },
+        hashed_password: { type: String, required: true, 'default': ' ' },
+        salt: { type: String, required: true },
+        name: { type: String, index: 'hashed', 'default': ' ' },
         age: { type: Number, 'default': -1 },
         created_at: { type: Date, index: { unique: false }, 'default': Date.now },
         updated_at: { type: Date, index: { unique: false }, 'default': Date.now }
@@ -118,52 +102,68 @@ function createUserSchema(){
 
     //password를 virtual 메소드로 정의 : MongoDB에 저장되지 않는 속성
     UserSchema.virtual('password')
-    .set(function(password){
-        this._password = password;
-        this.salt = this.makeSalt();
-        this.hashed_password = this.encryptPassword(password);
-        console.log('virtual password 호출됨. : '+this.hashed_password);
-    })
-    .get(function(){return this._password});
+        .set(function (password) {
+            this._password = password;
+            this.salt = this.makeSalt();
+            this.hashed_password = this.encryptPassword(password);
+            console.log('virtual password 호출됨. : ' + this.hashed_password);
+        })
+        .get(function () { return this._password });
 
     //모델 인스턴스에서 사용할 수 메소드 추가
     //비밀번호와 salt값을 전달받은 후 sha256으로 단방향 암호화하는 메소드
-    UserSchema.method('encryptPassword',function(plainText,inSalt){
-        if(inSalt){
-            return crypto.createHmac('sha256',inSalt).update(plainText).digest('hex');
+    UserSchema.method('encryptPassword', function (plainText, inSalt) {
+        if (inSalt) {
+            return crypto.createHmac('sha256', inSalt).update(plainText).digest('hex');
         }
-        else{
-            return crypto.createHmac('sha256',this.salt).update(plainText).digest('hex');
+        else {
+            return crypto.createHmac('sha256', this.salt).update(plainText).digest('hex');
         }
     });
 
     //salt값 생성 메소드
-    UserSchema.method('makeSalt',function(){
-        return Math.round((new Date().valueOf()*Math.random())) + '';
+    UserSchema.method('makeSalt', function () {
+        return Math.round((new Date().valueOf() * Math.random())) + '';
     });
 
     //인증 메소드
-    UserSchema.method('authenticate',function(plainText,inSalt,hashed_password){
-        if(inSalt){
-            console.log('authenticate 호출됨. : %s -> %s : %s',plainText,
-            this.encryptPassword(plainText,inSalt), hashed_password);
-            return this.encryptPassword(plainText,inSalt) == hashed_password;
+    UserSchema.method('authenticate', function (plainText, inSalt, hashed_password) {
+        if (inSalt) {
+            console.log('authenticate 호출됨. : %s -> %s : %s', plainText,
+                this.encryptPassword(plainText, inSalt), hashed_password);
+            return this.encryptPassword(plainText, inSalt) == hashed_password;
         }
-        else{
-            console.log('authenticate 호출됨. : %s -> %s : %s',plainText,
-            this.encryptPassword(plainText), hashed_password);
+        else {
+            console.log('authenticate 호출됨. : %s -> %s : %s', plainText,
+                this.encryptPassword(plainText), hashed_password);
             return this.encryptPassword(plainText) == hashed_password;
         }
     });
 
     //필수 속성에 대한 유효성 확인
-    UserSchema.path('id').validate(function(id){
+    UserSchema.path('id').validate(function (id) {
         return id.length;
     }, 'id 칼럼 값이 없습니다.');
 
-    UserSchema.path('name').validate(function(name){
+    UserSchema.path('name').validate(function (name) {
         return name.length;
-    },'name 칼럼 값이 없습니다.');
+    }, 'name 칼럼 값이 없습니다.');
+
+    //스키마에 static 메소드 추가, 모델 객체에서 사용가능(모델 인스턴스에서 사용하려면 method()로 정의)
+    //ID로 조회, 전부 조회
+    UserSchema.static('findById', function (id, callback) {
+        return this.find({ id: id }, callback);
+    });
+
+    UserSchema.static('findAll', function (callback) {
+        return this.find({}, callback);
+    });
+
+    //UserSchema로 모델 정의(model메소드와 Model메소드의 파라미터가 다르니 주의)
+    //users2 컬렉션과 매칭
+    UserModel = mongoose.model('users2', UserSchema);
+
+    console.log('UserModel 정의함.');
 }
 
 //사용자 인증 함수: 아이디로 먼저 찾고 비밀번호를 그다음에 비교
@@ -171,7 +171,7 @@ const authUser = (id, password, callback) => {
     console.log('authUser 호출됨');
 
     //1. 아이디로 검색
-    UserModel.findById(id,function (err, results) {
+    UserModel.findById(id, function (err, results) {
         if (err) {
             callback(err, null);
             return;
@@ -182,19 +182,19 @@ const authUser = (id, password, callback) => {
 
         if (results.length > 0) {
             console.log('아이디와 일치하는 사용자 찾음.');
-            
+
             //2. 비밀번호 확인
-            let user = new UserModel({id:id});
-            let authenticated = user.authenticate(password,results[0]._doc.salt,
+            let user = new UserModel({ id: id });
+            let authenticated = user.authenticate(password, results[0]._doc.salt,
                 results[0]._doc.hashed_password);
 
-            if(authenticated){
+            if (authenticated) {
                 console.log('비밀번호 일치함.');
-                callback(null,results);
+                callback(null, results);
             }
-            else{
+            else {
                 console.log('비밀번호 일치하지 않음.');
-                callback(null,null);
+                callback(null, null);
             }
         }
         else {
@@ -295,50 +295,50 @@ router.route('/process/adduser').post(function (req, res) {
     }
 });
 
-router.route('/process/listuser').post(function(req,res){
+router.route('/process/listuser').post(function (req, res) {
     console.log('/process/listuser 호출됨.');
 
     //데이터베이스 객체가 초기화된 경우, 모델 객체의 findAll 메소드 호출
-    if(database){
+    if (database) {
         //모든 사용자 검색
-        UserModel.findAll(function(err,results){
+        UserModel.findAll(function (err, results) {
             //오류가 발생하면 클라이언트로 전송
-            if(err){
+            if (err) {
                 console.log('사용자 리스트 조회 중 오류 발생 : ' + err.stack);
 
-                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.writeHead('200', { 'Content-Type': 'text/html;charset=utf8' });
                 res.write('<h2>사용자 리스트 조회 중 오류 발생</h2>');
-                res.write('<p>'+ err.stack + '</p>');
+                res.write('<p>' + err.stack + '</p>');
                 res.end();
 
                 return;
             }
 
             //결과 객체가 있다면 리스트를 전송
-            if(results){
+            if (results) {
                 console.dir(results);
 
-                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.writeHead('200', { 'Content-Type': 'text/html;charset=utf8' });
                 res.write('<h2>사용자 리스트</h2>');
                 res.write('<div><ul>');
 
-                for(let i = 0; i <results.length; i++){
+                for (let i = 0; i < results.length; i++) {
                     let curId = results[i]._doc.id;
                     let curName = results[i]._doc.name;
-                    res.write('    <li>#'+ i +' : ' + curId + ', ' + curName + '</li>');
+                    res.write('    <li>#' + i + ' : ' + curId + ', ' + curName + '</li>');
                 }
 
                 res.write('</ul></div>');
                 res.end();
             }
-            else{
-                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+            else {
+                res.writeHead('200', { 'Content-Type': 'text/html;charset=utf8' });
                 res.write('<h2>사용자 리스트 조회 실패</h2>');
                 res.end();
             }
         });
     }
-    else{
+    else {
         res.writeHead('200', { 'Content-Type': 'text/html;charset=utf8' });
         res.write('<h2>데이터베이스 연결 실패</h2>');
         res.end();
