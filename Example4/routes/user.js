@@ -17,10 +17,13 @@ const login = function (req, res) {
   let paramId = req.body.id;
   let paramPassword = req.body.password;
 
+  // 데이터베이스 객체 참조
+	const database = req.app.get('database');
+
   //데이터베이스 연결 확인
-  if (database) {
+  if (database.db) {
     //로그인 처리 요청
-    authUser(paramId, paramPassword, function (err, docs) {
+    authUser(database, paramId, paramPassword, function (err, docs) {
       if (err) throw err;
 
       //사용자가 조회되면 docs 객체의 첫번째 배열요소 참조
@@ -53,9 +56,12 @@ const adduser = function (req, res) {
 
   console.log('요청 파라미터 : ' + paramId + ', ' + paramPassword + ', ' + paramName);
 
+  // 데이터베이스 객체 참조
+	const database = req.app.get('database');
+
   //데이터베이스 객체가 초기화된 경우, addUser 함수 호출하여 사용자 추가
-  if (database) {
-    addUser(paramId, paramPassword, paramName, function (err, result) {
+  if (database.db) {
+    addUser(database, paramId, paramPassword, paramName, function (err, result) {
       if (err) {
         res.writeHead('200', { 'Content-Type': 'text/html;charset=utf8' });
         res.write('<h2>사용자 추가 실패</h2>');
@@ -82,10 +88,13 @@ const adduser = function (req, res) {
 const listuser = function (req, res) {
   console.log('user 모듈 안에 있는 listuser 호출됨.');
 
+  // 데이터베이스 객체 참조
+	const database = req.app.get('database');
+
   //데이터베이스 객체가 초기화된 경우, 모델 객체의 findAll 메소드 호출
-  if (database) {
+  if (database.db) {
     //모든 사용자 검색
-    UserModel.findAll(function (err, results) {
+    database.UserModel.findAll(function (err, results) {
       //오류가 발생하면 클라이언트로 전송
       if (err) {
         console.log('사용자 리스트 조회 중 오류 발생 : ' + err.stack);
@@ -130,11 +139,11 @@ const listuser = function (req, res) {
 }
 
 //사용자 인증 함수: 아이디로 먼저 찾고 비밀번호를 그다음에 비교
-const authUser = (id, password, callback) => {
+const authUser = (database, id, password, callback) => {
   console.log('authUser 호출됨');
 
   //1. 아이디로 검색
-  UserModel.findById(id, function (err, results) {
+  database.UserModel.findById(id, function (err, results) {
     if (err) {
       callback(err, null);
       return;
@@ -147,7 +156,7 @@ const authUser = (id, password, callback) => {
       console.log('아이디와 일치하는 사용자 찾음.');
 
       //2. 비밀번호 확인
-      let user = new UserModel({ id: id });
+      let user = new database.UserModel({ id: id });
       let authenticated = user.authenticate(password, results[0]._doc.salt,
         results[0]._doc.hashed_password);
 
@@ -168,11 +177,11 @@ const authUser = (id, password, callback) => {
 }
 
 //사용자 추가 함수
-const addUser = (id, password, name, callback) => {
+const addUser = (database, id, password, name, callback) => {
   console.log('addUser 호출됨 : ' + id + ', ' + password + ', ' + name);
 
   //UserModel의 인스턴스 생성
-  let user = new UserModel({ 'id': id, 'password': password, 'name': name });
+  let user = new database.UserModel({ 'id': id, 'password': password, 'name': name });
 
   //save메소드로 저장
   user.save(function (err) {
