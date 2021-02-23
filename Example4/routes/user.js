@@ -1,15 +1,3 @@
-let database;
-let UserSchema;
-let UserModel;
-
-const init = function(db,schema,model){
-  console.log('init 호출됨.');
-
-  database = db;
-  UserSchema = schema;
-  UserModel = model;
-}
-
 const login = function (req, res) {
   console.log('user 모듈 안에 있는 login 호출됨.');
 
@@ -195,7 +183,6 @@ const addUser = (database, id, password, name, callback) => {
 }
 
 module.exports = {
-  init: init,
   login: login,
   adduser: adduser,
   listuser: listuser,
