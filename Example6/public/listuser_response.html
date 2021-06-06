@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- 모바일 환경에서 조회시 크기 조정 -->
+  <meta name="viewport" content="width = device-width, height = device-height, initial-scale = 1">
+  <title>사용자 리스트 응답 테스트</title>
+
+  <!-- Semantic-ui 사용 준비 -->
+  <link href="./semantic.min.css" rel="stylesheet">
+  <script src="./jquery-3.6.0.min.js"></script>
+  <script stc="./semantic.min.js"></script>
+
+  <!-- 전체 화면 모양 결정 -->
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      /* 
+        1. 웹 브라우저마다 margin과 padding 값이 조금씩 다르므로 0으로 초기화 한다. 
+        2. 문서 안에 들어간 요소의 크기보다 테두리가 더 커지지 않도록 box-sizing 속성을 border-box로 설정
+        3. '*'기호는 모든 태그에 적용 
+        */
+    }
+
+    /*html과 body 태그의 가로 세로 크기를 100%로 만들어준다.*/
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      color: #000;
+      background-color: #fff;
+      /*배경색을 조정*/
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-flow: column wrap;
+      align-items: center;
+      justify-content: center;
+      /*
+        1. display 속성을 flex로 적용 -> flexbox를 사용하여 레이아웃 구성
+        2. align-items와 justify-content로 카드 컴포넌트가 화면 가운데 오도록 정렬
+        */
+    }
+
+    /* 필요에 따라 글자 크기, 가로 크기, 세로 크기 등을 조정 */
+    #cardbox {
+      width:40%;
+    }
+
+    #iconImage {
+      display: inline;
+    }
+
+    #titleText {
+      font-size: 1.4em;
+      font-weight: bold;
+      color: #777;
+    }
+
+    #contentsText {
+      color: #999;
+    }
+
+    #form1 {
+      padding: 1em;
+    }
+
+    .row {
+      height: 3em;
+    }
+
+    .col1 {
+      width: 5em;
+    }
+
+    .inputbox {
+      width: 20em;
+    }
+    #buttonContainer {
+      padding-top: 0.6em;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <br>
+    <div class="ui raised segment">
+      <a class="ui blue ribbon label">사용자리스트</a>
+      <br><br>
+      <div class = "ui two column grid">
+        <div class = "column">
+          <div class = "ui blue fluid card">
+            <div class = "content">
+              <div class = "header">TEST</div>
+              <div class = "meta">
+                <span class = "right floated time">나이</span>
+                <span class = "category">카테고리</span>
+              </div>
+              <div class = "description">
+                <br>
+                <p>설명1</p>
+                <p>설명2</p>
+              </div>
+            </div>
+            <div class = "bottomArea extra content">
+              <div class = "right floated author">
+                <img class = "ui avatar image" src = "./images/author.png">010-1234-5678
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class = "column">
+          <div class = "ui blue fluid card">
+            <div class = "content">
+              <div class = "header">TEST2</div>
+              <div class = "meta">
+                <span class = "right floated time">나이</span>
+                <span class = "category">카테고리</span>
+              </div>
+              <div class = "description">
+                <br>
+                <p>설명1</p>
+                <p>설명2</p>
+              </div>
+            </div>
+            <div class = "bottomArea extra content">
+              <div class = "right floated author">
+                <img class = "ui avatar image" src = "./images/author.png">010-1234-5678
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
